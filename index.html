@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#222222"><title>03:33 — 야간수당</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div class="brand"><span class="logo">24<span>HOURS</span></span><span>달빛편의점<small>밤을 지키는 당신에게.</small></span></div><div class="title">03:33 <span>야간수당</span></div><button id="sound" class="subtle" title="소리 켜기/끄기">소리 OFF</button></header>
+<main>
+<section class="game-column"><div class="status"><span><i class="live"></i> <b id="zone">달빛편의점</b></span><span id="save-status">자동 저장 준비</span></div>
+<div class="viewport"><canvas id="game" width="1100" height="700" tabindex="0" aria-label="야간수당 게임. WASD 이동, 마우스 조준 및 공격, E 상호작용"></canvas><div id="touch"><div class="dpad"><button data-key="w">↑</button><div><button data-key="a">←</button><button data-key="s">↓</button><button data-key="d">→</button></div></div><div><button data-action="heal">회복</button><button data-key=" ">회피</button><button data-action="interact">E</button></div></div></div>
+<div class="controls"><span><kbd>W A S D</kbd> 이동</span><span><kbd>마우스 / J</kbd> 공격</span><span><kbd>SPACE</kbd> 회피</span><span><kbd>E</kbd> 줍기 · 대화</span><span><kbd>Q</kbd> 회복</span><span><kbd>I</kbd> 장비</span><span><kbd>ESC</kbd> 휴식</span></div>
+<div class="dispatch"><span>점장의 메모</span><p id="dispatch">손님이 천장에 붙어 있어도 존댓말을 사용해 주세요.</p><span class="dispatch-id">03:33 AM</span></div></section>
+<aside><div class="shift-heading"><span class="eyebrow">NIGHT SHIFT</span><span class="badge">근무 중</span></div><h1>오늘도, 무사 퇴근.</h1><div class="employee"><div class="avatar">夜</div><div><strong>심야 아르바이트생</strong><small id="level">LV. 1 · 수습 차원관리사</small></div></div>
+<div class="vitals"><div class="bar-label"><span>체력</span><b id="hp-text"></b></div><div class="bar"><div id="hp-bar"></div></div><div class="bar-label"><span>다음 레벨까지</span><b id="xp-text"></b></div><div class="bar xp"><div id="xp-bar"></div></div></div>
+<div class="wallet"><div><small>야간수당</small><strong id="money">₩ 0</strong></div><div><small><svg class="cell-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6v3H9zM6 5h12v16H6z" fill="currentColor"/><path d="m13 7-4 6h3l-1 5 5-7h-4z" fill="#252420"/></svg> 잔류 전지</small><strong id="cells">0</strong></div></div>
+<button class="food-button" data-action="heal"><span>삼각김밥 <strong id="potions">3개</strong></span><span>회복 <kbd>Q</kbd></span></button>
+<section class="side-section"><div class="section-title"><span>지금 쓰는 무기</span><span class="muted">E로 줍고 I로 관리</span></div><div id="weapon" class="weapon-card"></div><button id="bag" class="wide bag-button"><span>내 장비 <small id="bag-count">1</small></span><kbd>I</kbd></button></section>
+<section class="side-section objective"><div class="eyebrow">오늘의 할 일</div><h2 id="quest-title">골목 청소</h2><p id="quest"></p><div class="progress-track"><div id="quest-progress"></div></div><div class="route"><span>골목</span><span>주차장</span><span>물류 균열</span></div></section>
+<button class="wide home-button" id="return"><span>편의점으로 귀환</span><kbd>R</kbd></button><small class="hint">3초간 공격받지 않으면 안전하게 귀환합니다.</small><button class="wide subtle" id="help">근무 매뉴얼</button></aside>
+</main><footer><span>MOONLIGHT MART <b>×</b> NIGHT SHIFT</span><span>폐기 상품은 먹어도 됩니다. 폐기 차원은 먹지 마세요.</span></footer>
+<div id="toast" role="status" aria-live="polite"></div><div id="modal" class="overlay" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-label="게임 메뉴"></div></div>
+<script src="gear.js"></script><script src="game.js"></script></body></html>

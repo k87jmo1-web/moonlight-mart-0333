@@ -1,0 +1,38 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>장비 성장 브라우저 검증</title><style>body{margin:0;background:#202121;color:#eee;font:13px system-ui}header{padding:12px 20px;display:flex;gap:16px;align-items:center}button{padding:9px 16px;cursor:pointer}iframe{border:0;width:100%;height:820px;display:block}#results{padding:12px 20px;line-height:1.8;white-space:pre-wrap}.pass{color:#dccb90}.fail{color:#ffa3a3}</style><header><strong>실제 브라우저 통합 검사</strong><button id="run">전체 흐름 검사</button><button id="inventory">장비 화면 보기</button><button id="world">게임 화면 보기</button><button id="shop">상점 보기</button><button id="preview">UI 검토 모드</button><button id="mobile">모바일 검토</button><span>테스트 전용 저장 키 · 실제 저장 기록과 분리</span></header><div id="results">준비 중…</div><iframe id="app" title="실제 게임 테스트"></iframe>
+<script>
+const frame=document.getElementById('app'),output=document.getElementById('results');let src;
+const before=`<script>const nativeStorage=window.localStorage;Object.defineProperty(window,'localStorage',{value:{getItem:k=>nativeStorage.getItem('qa-equipment-'+k),setItem:(k,v)=>nativeStorage.setItem('qa-equipment-'+k,v)}});window.requestAnimationFrame=()=>0;<\/script>`;
+const after=`<script>
+window.qa={
+ reset(){state=fresh();state.money=400;state.cells=40;running=true;closeModal();enterZone(0);save();},
+ prepareCombat(){enterZone(1);chest=null;enemies=[];bullets=[];spawnTimer=999;const old=Math.random;Math.random=()=>.5;for(let i=0;i<2;i++){spawnEnemy('bag');const e=enemies[i];e.x=player.x+90+i*55;e.y=player.y;e.speed=0;e.elite=false;e.hp=e.max=37;}Math.random=old;},
+ step(n){const old=Math.random;Math.random=()=>.5;try{for(let i=0;i<n;i++)update(1/60);}finally{Math.random=old;}draw();},
+ approachDrop(){const drop=drops[0];if(!drop)throw Error('전투 드롭 없음');player.x=drop.x;player.y=drop.y;draw();},
+ home(){enterZone(0);},
+ inventory(){inventory();draw();},
+ shop(){closeModal();shop();draw();},
+ world(){closeModal();draw();},
+ state(){return JSON.parse(JSON.stringify({state,zone,modal,dropCount:drops.length,damage:damage(equipped()),enemies:enemies.map(e=>({hp:e.hp,max:e.max})),selectedWeapon}));},
+ prepareTarget(){enterZone(1);chest=null;enemies=[];bullets=[];spawnTimer=999;spawnEnemy('slime');enemies[0].x=player.x+70;enemies[0].y=player.y;enemies[0].speed=0;enemies[0].hp=enemies[0].max=1000;player.fire=0;},
+ preview(){state.inventory=Array.from({length:5},(_,i)=>makeWeapon(i,i%4,2));state.equipped=state.inventory[0].id;state.money=650;state.cells=45;state.inventory[0].enhance=1;updateUI();inventory(state.equipped);draw();},
+draw
+};draw();<\/script>`;
+async function load(){return new Promise(resolve=>{frame.onload=()=>resolve();frame.srcdoc=src.replace('<head>','<head><base href="../">'+before).replace('</body>',after+'</body>');});}
+function click(action){const e=frame.contentDocument.querySelector('[data-action="'+action+'"]');if(!e)throw Error('버튼 없음: '+action);if(e.disabled)throw Error('비활성 버튼: '+action);e.click();}
+function key(k,down=true){frame.contentDocument.dispatchEvent(new frame.contentWindow.KeyboardEvent(down?'keydown':'keyup',{key:k,bubbles:true}));}
+let passed=0;
+function check(ok,label){if(!ok)throw Error(label);passed++;output.textContent+='✓ '+label+'\n';}
+document.getElementById('run').onclick=async()=>{passed=0;output.textContent='';output.className='pass';try{
+ let qa=frame.contentWindow.qa;qa.reset();qa.prepareCombat();key('j');qa.step(160);key('j',false);let s=qa.state();check(s.state.kills===2&&s.dropCount>=1,'실제 연사 전투 → 몬스터 2마리 처치 → 무기 드롭');
+ qa.approachDrop();key('e');key('e',false);s=qa.state();check(s.state.inventory.length===2&&s.modal===''&&frame.contentDocument.getElementById('modal').hidden,'E 한 번 → 즉시 가방 저장, 팝업 없음');check(frame.contentDocument.getElementById('toast').textContent.includes('획득'),'획득 토스트 표시');
+ const original=s.state.equipped,picked=s.state.inventory[1].id;key('i');key('i',false);check(frame.contentDocument.querySelectorAll('.weapon-slot').length===2,'아이콘 슬롯에 무기 2개 표시');check(!frame.contentDocument.querySelector('.stat-grid'),'선택 전에는 상세 능력치 숨김');click('select:'+picked);check(!!frame.contentDocument.querySelector('.stat-grid'),'무기 클릭 → 공격력·공격속도·사거리 비교 표시');click('equip:'+picked);check(qa.state().state.equipped===picked,'획득한 무기 장착');
+ click('select:'+original);click('ask-salvage:'+original);const beforeCells=qa.state().state.cells;click('salvage:'+original);s=qa.state();check(s.state.inventory.length===1&&s.state.cells>beforeCells,'기존 무기 분해 → 잔류 전지 획득');
+ click('select:'+picked);check(frame.contentDocument.querySelector('[data-action="enhance:'+picked+'"]').disabled,'전투 구역에서는 강화 불가');click('close');qa.home();key('i');key('i',false);click('select:'+picked);
+ const pre=qa.state(),preGear=pre.state.inventory[0];for(let i=0;i<3;i++)click('enhance:'+picked);let enhanced=qa.state();check(enhanced.state.inventory[0].enhance===3&&enhanced.state.money<pre.state.money&&enhanced.state.cells<pre.state.cells,'돈 + 잔류 전지 지불 → 확정 +3 강화');check(enhanced.damage>pre.damage,'강화 후 실제 피해 수치 증가');click('promote:'+picked);s=qa.state();check(s.state.inventory[0].rarity===preGear.rarity+1&&s.state.inventory[0].enhance===3,'등급 상승, 강화 +3 유지');
+ click('close');qa.prepareTarget();key('j');qa.step(40);key('j',false);check(qa.state().enemies[0].hp<1000,'강화·승급한 무기로 실제 공격 피해 발생');qa.home();const expected=JSON.stringify(qa.state().state);await load();qa=frame.contentWindow.qa;check(JSON.stringify(qa.state().state)===expected,'페이지 재로딩 후 무기·장착·돈·전지·강화·등급 전부 유지');qa.inventory();click('select:'+picked);qa.draw();
+ output.textContent+='\n'+passed+'개 브라우저 검증 통과';
+ }catch(e){output.className='fail';output.textContent+='\nFAIL: '+e.stack;}};
+document.getElementById('inventory').onclick=()=>frame.contentWindow.qa.inventory();document.getElementById('world').onclick=()=>frame.contentWindow.qa.world();document.getElementById('shop').onclick=()=>frame.contentWindow.qa.shop();
+document.getElementById('preview').onclick=()=>{document.querySelector('header').style.display='none';output.hidden=true;frame.style.height='100vh';frame.contentWindow.qa.preview();};document.getElementById('mobile').onclick=()=>{frame.style.width='390px';frame.style.height='760px';frame.contentWindow.qa.preview();};
+fetch('../index.html').then(r=>r.text()).then(async html=>{src=html;await load();output.textContent='준비 완료. 전체 흐름 검사를 실행하세요.';});
+</script></html>
