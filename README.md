@@ -47,6 +47,8 @@ python -m http.server 8765 --bind 127.0.0.1
 
 ## 잔류 전지와 무기 성장
 
+특수 지급 무기 **「퇴근 승인 · 궤도 소거포」**가 추가되었습니다. HUD 또는 Esc 메뉴의 **지급 코드**에서 수령 후 I에서 장착합니다. 전설 MK.5 +3으로 지급되며 광폭 관통 광선과 명중 지점의 연쇄 폭발을 사용합니다. 일반 드롭에는 포함되지 않으며 저장 기록당 한 번 지급됩니다. 가방이 가득 차면 비운 뒤 다시 입력할 수 있고, 실수로 잃지 않도록 분해를 막았습니다.
+
 잔류 전지는 잘못 배송된 차원 병기에 남은 에너지입니다. 몬스터 처치(3킬마다 보장 및 추가 확률), 엘리트, 탐험 상자(8/11/14개), 보스(30개), 무기 분해로 얻습니다. 획득한 재료는 자동 정산되며 사망해도 유지됩니다.
 
 - 편의점에서 **I → 무기 선택**, 또는 계산대 **E → 무기 관리**로 강화합니다. 밖에서는 비교·장착·분해만 가능합니다.
@@ -64,7 +66,7 @@ python -m http.server 8765 --bind 127.0.0.1
 
 ## GitHub Pages 배포
 
-1. GitHub 저장소를 만들고 `index.html`, `style.css`, `game.js`, `gear.js`, `.nojekyll`을 루트에 업로드합니다. README와 tests는 선택입니다.
+1. GitHub 저장소를 만들고 `index.html`, `style.css`, `game.js`, `gear.js`, `special.js`, `.nojekyll`을 루트에 업로드합니다. README와 tests는 선택입니다.
 2. 저장소 **Settings → Pages → Build and deployment**에서 **Deploy from a branch**를 선택합니다.
 3. 업로드한 브랜치(보통 `main`), 폴더 `/ (root)`를 선택하고 Save합니다.
 4. 배포가 끝나면 표시되는 `https://사용자명.github.io/저장소명/` 링크를 공유합니다.
@@ -77,6 +79,7 @@ python -m http.server 8765 --bind 127.0.0.1
 - `style.css`: 반응형 UI
 - `game.js`: 전투, 게임 데이터, 저장, Canvas 렌더링
 - `gear.js`: 장비 UI, 무기 아이콘, 분해, 강화, 등급 상승
+- `special.js`: 코드 지급, 특수무기 공격 및 궤도 광선·충격파 이펙트
 - `tests/game.test.cjs`: 전투·성장·저장·상점·부활·보스 회귀 테스트
 - `tests/browser.html`: 실제 DOM과 Canvas에서 획득부터 재접속까지 검증하는 브라우저 통합 검사. 테스트용 전용 저장 키와 고정 전투/자원 조건을 사용하며 실제 세이브를 변경하지 않습니다. HTTP 실행 후 이 파일을 열어 검사를 실행합니다.
 
